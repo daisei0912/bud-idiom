@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>バスで覚える英熟語</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Meiryo',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100vh}
+#app{max-width:680px;margin:0 auto;padding:1rem}
+.scr{display:none}.scr.on{display:block}
+
+/* ── LOGIN ── */
+.login-wrap{max-width:360px;margin:3rem auto;background:#fff;border:1px solid #e5e5e0;border-radius:16px;padding:2rem}
+.login-wrap h2{font-size:18px;font-weight:600;color:#1a1a18;margin-bottom:4px}
+.login-wrap p{font-size:13px;color:#888;margin-bottom:1.5rem}
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:12px;font-weight:500;color:#555;margin-bottom:4px}
+.field input{width:100%;padding:.6rem .8rem;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;outline:none}
+.field input:focus{border-color:#6366f1}
+.login-btn{width:100%;padding:.7rem;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.login-btn:hover{background:#4f46e5}
+.login-err{font-size:12px;color:#e11d48;margin-top:.5rem;display:none}
+
+/* ── HOME ── */
+.home-hd{text-align:center;padding:1.25rem 0 .75rem}
+.home-hd h1{font-size:20px;font-weight:600;color:#1a1a18}
+.home-hd .student-name{font-size:13px;color:#6366f1;margin-top:3px;font-weight:500}
+.gbadge{display:inline-flex;align-items:center;gap:6px;margin-top:7px;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid}
+.gb0{background:#f5f5f0;color:#888;border-color:#e5e5e0}
+.gb1{background:#edfaf3;color:#1a7a45;border-color:#b0e8c8}
+.gb2{background:#f0eaff;color:#6b21a8;border-color:#d4b8f8}
+.sync-row{text-align:center;margin-bottom:.5rem}
+.sync-btn{font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;padding:2px 8px}
+.sync-btn:hover{color:#6366f1}
+.sync-status{font-size:11px;color:#aaa;margin-left:6px}
+
+.stage-list{display:flex;flex-direction:column;gap:8px;margin:.75rem 0}
+.strow{background:#fff;border:1px solid #e5e5e0;border-radius:12px;padding:.85rem 1rem;cursor:pointer;transition:border-color .15s;display:flex;align-items:center;gap:11px}
+.strow:hover:not(.locked){border-color:#aaa}
+.strow.locked{opacity:.5;cursor:default}
+.strow.conf{border-color:#6ee7a0}
+.st-ic{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0}
+.ic-done{background:#edfaf3;color:#1a7a45}
+.ic-act{background:#eef2ff;color:#3730a3}
+.ic-lock{background:#f5f5f0;color:#aaa}
+.st-bd{flex:1;min-width:0}
+.st-name{font-size:14px;font-weight:600;color:#1a1a18}
+.st-sub{font-size:11px;color:#888;margin-top:1px}
+.st-bar{height:4px;background:#e8e8e2;border-radius:2px;margin-top:5px;overflow:hidden}
+.st-fill{height:100%;border-radius:2px;background:#34d074;transition:width .3s}
+.st-tag{font-size:11px;padding:2px 8px;border-radius:10px;flex-shrink:0;font-weight:500}
+.tag-m{background:#edfaf3;color:#1a7a45}
+.tag-p{background:#fef9ec;color:#92400e;border:1px solid #fde68a}
+.tag-u{background:#f5f5f0;color:#888;border:1px solid #e5e5e0}
+
+.fbox{background:#fff;border:1px solid #c7d7fe;border-radius:12px;padding:.9rem 1rem;margin-top:.5rem}
+.fbox h3{font-size:14px;font-weight:600;color:#1a1a18;margin-bottom:4px}
+.fbox p{font-size:12px;color:#555;line-height:1.6;margin-bottom:8px}
+.fbtn{padding:.45rem 1rem;border-radius:8px;border:1px solid #6366f1;background:#eef2ff;color:#3730a3;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
+.fbtn:hover{background:#e0e7ff}
+.fbtn:disabled{opacity:.4;cursor:default}
+
+/* ── STAGE ── */
+.back-btn{font-size:13px;color:#666;cursor:pointer;margin-bottom:.85rem;display:inline-flex;align-items:center;gap:4px;background:none;border:none;padding:0}
+.back-btn:hover{color:#1a1a18}
+.sv-hd{margin-bottom:.8rem}
+.sv-hd h2{font-size:17px;font-weight:600;color:#1a1a18}
+.sv-hd p{font-size:12px;color:#888;margin-top:2px}
+.cfg-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:.7rem}
+.cfg-lbl{font-size:12px;color:#666;min-width:60px}
+.seg{display:flex;gap:3px}
+.sb{padding:4px 11px;border-radius:7px;border:1px solid #ddd;background:#fff;font-size:12px;color:#666;cursor:pointer;font-family:inherit}
+.sb.on{background:#eef2ff;color:#3730a3;border-color:#6366f1;font-weight:500}
+.sb:hover:not(.on){border-color:#aaa}
+.stat-row{display:flex;gap:7px;margin-bottom:.8rem;flex-wrap:wrap;align-items:center}
+.chip{padding:3px 10px;border-radius:10px;font-size:12px;font-weight:500}
+.ch-m{background:#edfaf3;color:#1a7a45}
+.ch-c{background:#fef9ec;color:#92400e}
+.ch-u{background:#f5f5f0;color:#666;border:1px solid #e5e5e0}
+.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:.7rem}
+.mbtn{background:#fff;border:1px solid #e5e5e0;border-radius:8px;padding:.6rem .8rem;cursor:pointer;text-align:left;font-family:inherit}
+.mbtn:hover:not(:disabled){border-color:#aaa}
+.mbtn:disabled{opacity:.4;cursor:default}
+.mb-t{font-size:13px;font-weight:500;color:#1a1a18}
+.mb-s{font-size:11px;color:#888;margin-top:2px}
+.cbox{background:#fff;border:1px solid #c7d7fe;border-radius:8px;padding:.8rem .9rem}
+.cbox h4{font-size:13px;font-weight:600;color:#1a1a18;margin-bottom:3px}
+.cbox p{font-size:12px;color:#555;margin-bottom:8px;line-height:1.5}
+.cbtn{padding:.38rem .85rem;border-radius:8px;border:1px solid #6366f1;background:#eef2ff;color:#3730a3;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500}
+
+/* ── QUIZ ── */
+.qv-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.55rem}
+.qv-info{font-size:13px;color:#666}
+.tw{display:flex;align-items:center;gap:5px}
+.tring{width:32px;height:32px}
+.tnum{font-size:18px;font-weight:600;min-width:22px;text-align:center;color:#3730a3}
+.qbar{height:3px;background:#e8e8e2;border-radius:2px;margin-bottom:.9rem;overflow:hidden}
+.qbarf{height:100%;border-radius:2px;background:#6366f1;transition:width .25s}
+.qcard{background:#fff;border:1px solid #e5e5e0;border-radius:12px;padding:1.2rem;margin-bottom:.85rem}
+.qno{font-size:11px;color:#aaa;margin-bottom:3px}
+.qidiom{font-size:20px;font-weight:600;color:#1a1a18;line-height:1.3}
+.qcat{font-size:11px;color:#aaa;margin-top:3px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.cb{background:#fff;border:1px solid #e5e5e0;border-radius:8px;padding:.65rem .8rem;cursor:pointer;text-align:left;font-size:13px;color:#1a1a18;font-family:inherit;line-height:1.5;transition:border-color .1s,background .1s}
+.cb:hover:not(:disabled){border-color:#aaa;background:#fafafa}
+.cb.ok{border-color:#34d074!important;background:#edfaf3!important;color:#1a7a45!important}
+.cb.ng{border-color:#f87171!important;background:#fef2f2!important;color:#b91c1c!important}
+.cb.to{border-color:#fbbf24!important;background:#fef9ec!important}
+.cb:disabled{cursor:default}
+.clbl{font-size:10px;font-weight:600;color:#aaa;display:block;margin-bottom:2px}
+.exbox{background:#f8f8f4;border-radius:8px;padding:.65rem .8rem;margin-top:.8rem;font-size:12px;color:#555;line-height:1.6;display:none}
+.exen{color:#1a1a18;font-weight:500;margin-bottom:2px}
+.nxtbtn{width:100%;padding:.65rem;background:#fff;border:1px solid #ccc;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;color:#1a1a18;font-family:inherit;margin-top:.75rem}
+.nxtbtn:hover{background:#f5f5f0}
+.nxtbtn:disabled{opacity:.35;cursor:default}
+
+/* ── RESULT ── */
+.rcard{background:#fff;border:1px solid #e5e5e0;border-radius:12px;padding:1.4rem;text-align:center;margin:.85rem 0}
+.rbig{font-size:46px;font-weight:700;color:#1a1a18}
+.rden{font-size:17px;color:#888}
+.rmsg{font-size:13px;color:#555;margin-top:.35rem;line-height:1.5}
+.rstats{display:flex;justify-content:center;gap:1.2rem;margin-top:.65rem;font-size:12px}
+.rs-ok{color:#1a7a45}.rs-ng{color:#b91c1c}.rs-to{color:#92400e}
+.racts{display:flex;gap:7px;justify-content:center;margin-top:.9rem;flex-wrap:wrap}
+.ra{padding:.48rem .9rem;border-radius:8px;border:1px solid #ddd;cursor:pointer;font-size:13px;font-family:inherit;background:#fff;color:#1a1a18}
+.ra:hover{background:#f5f5f0}
+.revhd{font-size:12px;font-weight:500;color:#888;margin:.5rem 0 .35rem}
+.ritem{padding:.5rem 0;border-bottom:1px solid #f0f0ea;display:flex;align-items:flex-start;gap:8px;font-size:12px}
+.ritem:last-child{border-bottom:none}
+.riid{font-weight:500;color:#1a1a18;margin-bottom:1px}
+.ri-ok{color:#1a7a45}.ri-ng{color:#b91c1c}
+.stag{font-size:10px;padding:1px 6px;border-radius:7px;margin-left:4px;vertical-align:middle}
+.stag-m{background:#edfaf3;color:#1a7a45}
+.stag-c{background:#fef9ec;color:#92400e}
+.stag-u{background:#f5f5f0;color:#888;border:1px solid #e5e5e0}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:2rem;font-size:13px;color:#aaa}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- LOGIN -->
+<div id="pg-login" class="scr on">
+  <div class="login-wrap">
+    <h2>バスで覚える英熟語</h2>
+    <p>氏名を入力してスタートしましょう</p>
+    <div class="field">
+      <label>クラス</label>
+      <input type="text" id="inp-class" placeholder="例：3年A組" maxlength="20">
+    </div>
+    <div class="field">
+      <label>氏名</label>
+      <input type="text" id="inp-name" placeholder="例：山田 太郎" maxlength="20">
+    </div>
+    <button class="login-btn" onclick="doLogin()">スタート</button>
+    <div class="login-err" id="login-err">クラスと氏名を入力してください</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="pg-home" class="scr">
+  <div class="home-hd">
+    <h1>バスで覚える英熟語</h1>
+    <div class="student-name" id="student-name"></div>
+    <div id="gbadge-wrap"></div>
+  </div>
+  <div class="sync-row">
+    <button class="sync-btn" onclick="syncToServer()">↑ 進捗を送信</button>
+    <span class="sync-status" id="sync-status"></span>
+  </div>
+  <div class="stage-list" id="stage-list"></div>
+  <div id="final-area"></div>
+</div>
+
+<!-- STAGE -->
+<div id="pg-stage" class="scr">
+  <button class="back-btn" onclick="goHome()">← ステージ一覧</button>
+  <div class="sv-hd"><h2 id="sv-title"></h2><p id="sv-desc"></p></div>
+  <div class="cfg-row">
+    <span class="cfg-lbl">⏱ 制限時間</span>
+    <div class="seg" id="seg-t">
+      <button class="sb" data-v="3" onclick="setTimer(3)">3秒</button>
+      <button class="sb on" data-v="5" onclick="setTimer(5)">5秒</button>
+      <button class="sb" data-v="7" onclick="setTimer(7)">7秒</button>
+      <button class="sb" data-v="0" onclick="setTimer(0)">なし</button>
+    </div>
+  </div>
+  <div class="cfg-row">
+    <span class="cfg-lbl">📝 演習数</span>
+    <div class="seg" id="seg-c">
+      <button class="sb on" data-v="0" onclick="setCount(0)">全問</button>
+      <button class="sb" data-v="10" onclick="setCount(10)">10問</button>
+      <button class="sb" data-v="20" onclick="setCount(20)">20問</button>
+    </div>
+  </div>
+  <div class="stat-row" id="stat-row"></div>
+  <div class="mode-grid" id="mode-grid"></div>
+  <div id="confirm-area"></div>
+</div>
+
+<!-- QUIZ -->
+<div id="pg-quiz" class="scr">
+  <button class="back-btn" id="qback">← 中断</button>
+  <div class="qv-top">
+    <span class="qv-info" id="qvinfo"></span>
+    <div class="tw">
+      <svg class="tring" viewBox="0 0 32 32" id="tsvg" style="display:none">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="#e8e8e2" stroke-width="3"/>
+        <circle cx="16" cy="16" r="13" fill="none" stroke="#6366f1" stroke-width="3"
+          stroke-dasharray="81.7" stroke-dashoffset="0" id="tarc" stroke-linecap="round"
+          transform="rotate(-90 16 16)"/>
+      </svg>
+      <span class="tnum" id="tnum" style="display:none"></span>
+    </div>
+  </div>
+  <div class="qbar"><div class="qbarf" id="qbarf"></div></div>
+  <div class="qcard">
+    <div class="qno" id="qno"></div>
+    <div class="qidiom" id="qidiom"></div>
+    <div class="qcat" id="qcat"></div>
+  </div>
+  <div class="choices" id="choices"></div>
+  <div class="exbox" id="exbox"><div class="exen" id="exen"></div><div id="exjp"></div></div>
+  <button class="nxtbtn" id="nxtbtn" onclick="nextQ()" disabled></button>
+</div>
+
+<!-- RESULT -->
+<div id="pg-result" class="scr">
+  <button class="back-btn" id="rbtn"></button>
+  <div class="rcard">
+    <div><span class="rbig" id="rsc"></span><span class="rden" id="rden"></span></div>
+    <div class="rmsg" id="rmsg"></div>
+    <div class="rstats"><span class="rs-ok" id="rsok"></span><span class="rs-ng" id="rsng"></span><span class="rs-to" id="rsto"></span></div>
+    <div class="racts" id="racts"></div>
+  </div>
+  <div class="revhd">解答一覧</div>
+  <div id="revlist"></div>
+</div>
+
+</div>
+<script>
+/* ══════════════════════════════════════════
+   ★ 設定：デプロイ後にここを書き換える
+══════════════════════════════════════════ */
+const GAS_URL = 'YOUR_GAS_WEB_APP_URL_HERE';
+/* ══════════════════════════════════════════ */
+
+const D=[
+[1,"動詞","account for","～を説明する，～の原因となる","How do you account for that?","君はそれをどう説明しますか。"],
+[2,"動詞","adapt oneself to","～に順応する","Animals can adapt themselves to changes in their surroundings.","動物たちは環境の変化に順応することができる。"],
+[3,"動詞","admire A for B","A〈人〉のBに感心する","Everybody admired her for saving the old man from drowning.","老人が溺れているのを助けたことで，皆は彼女を賞賛した。"],
+[4,"動詞","agree to","～に同意する","Some people agree to his plan.","彼の計画に同意する人もいる。"],
+[5,"動詞","apply for","～を求める，申し込みをする","Tom is going to apply for a new job.","トムは新しい仕事に申し込むつもりだ。"],
+[6,"動詞","apply to","～に当てはまる","This law applies to everybody.","この法律は万人に当てはまる。"],
+[7,"動詞","approve of","～に賛成する","My mother finally approved of my marriage.","母はついに私の結婚を認めた。"],
+[8,"動詞","be accustomed to doing","～に慣れている","We are accustomed to getting up early.","私たちは早起きに慣れている。"],
+[9,"動詞","be angry with","～に腹を立てている","He was angry with his son.","彼は息子に腹を立てていた。"],
+[10,"動詞","be anxious for","～を切望している","Fred's father was anxious for his son's revival.","フレッドの父は息子の回復を切望していた。"],
+[11,"動詞","be apt to do","～しがちである","A careless person is apt to make mistakes.","不注意な人はミスをしがちだ。"],
+[12,"動詞","be at a loss","途方に暮れて","I was completely at a loss.","私は全く途方に暮れていた。"],
+[13,"動詞","be bound to do","きっと～する","She is bound to notice my mistake.","彼女はきっと私のミスに気付きます。"],
+[14,"動詞","be caught in","～にあう","I was caught in a shower on my way home.","私は帰り道でにわか雨にあった。"],
+[15,"動詞","be certain to do","間違いなく～する","The police are certain to arrest Harry.","警察は間違いなくハリーを逮捕する。"],
+[16,"動詞","be compelled to do","やむなく～する","He was compelled to resign from his post.","彼はやむなく地位を辞職した。"],
+[17,"動詞","be content with","～に満足している","Are you content with your present salary?","今の給料に満足しているのですか。"],
+[18,"動詞","be convinced of","～を確信している","I am convinced of his guilt.","私は彼の有罪を確信している。"],
+[19,"動詞","be crazy about","～に夢中である","She is crazy about building model planes.","彼女は模型の飛行機を作るのに熱中している。"],
+[20,"動詞","be dependent on","～に頼っている","Japan is dependent on imports for oil.","日本は石油の輸入に頼っている。"],
+[21,"動詞","be dressed in","～の服装をしている","The young man was dressed in a strange shirt.","その若者は奇妙なシャツを着ていた。"],
+[22,"動詞","be engaged in","～に従事している","They are engaged in the trade with Spain.","彼らはスペインとの貿易に従事している。"],
+[23,"動詞","be entitled to","～の資格がある","All members are entitled to attend the meeting.","会員はみんな会合に出席する権利がある。"],
+[24,"動詞","be essential to","～にとって不可欠である","She is essential to our success.","私たちの成功に彼女は不可欠だ。"],
+[25,"動詞","be faced with","～に直面している","He is faced with a difficult problem.","彼は難問に直面している。"],
+[26,"動詞","be filled with","～でいっぱいだ","The room was filled with furniture.","その部屋は家具でいっぱいだった。"],
+[27,"動詞","be known for","～で知られている","People there are known for being polite.","その国の人々は礼儀正しいことで知られている。"],
+[28,"動詞","be known to","～に知られている","The city is known to almost everyone in Japan.","その市は日本のほとんどの人に知られている。"],
+[29,"動詞","be pleased with","～に喜んでいる","Her mother is more pleased with the results.","彼女の母親はその結果に喜んでいる。"],
+[30,"動詞","be related to","～に関係のある","These two cultures are related to each other.","この二つの文化はお互いに関係がある。"],
+[31,"動詞","be responsible for","～に対して責任がある","You are responsible for the accident.","あなたにはその事故に対して責任がある。"],
+[32,"動詞","be short of","～が不足している","I am short of cash at the moment.","今は現金が不足している。"],
+[33,"動詞","be sick of","うんざりして","I am sick of his lecture.","彼の講義はうんざりだ。"],
+[34,"動詞","be sorry for","～を気の毒に思う","I'm sorry for the young lady.","私はその若い婦人を気の毒に思う。"],
+[35,"動詞","be suitable for","～に適している","Is she suitable for the position?","彼女がその地位に適しているか？"],
+[36,"動詞","be sure of","～を確信している","We are sure of our success.","我々は自分たちの成功を確信している。"],
+[37,"動詞","be sure to do","きっと～するだろう","The day is sure to come when your dream comes true.","君の夢が実現する日がきっと来るだろう。"],
+[38,"動詞","be true to","～に忠実だ","The translation is quite true to the original.","その翻訳は原書に全く忠実だ。"],
+[39,"動詞","be worthy of","～に値する","The computer technology is worthy of study.","コンピューターの技術は研究に値する。"],
+[40,"動詞","behave oneself","行儀よくする","Behave yourself at a party.","パーティーでは行儀よくしなさい。"],
+[41,"動詞","blame A for B","BでAを非難する","We tend to blame others for our failures.","私たちは失敗を他人のせいにしがちだ。"],
+[42,"動詞","break into","～に押し入る","A burglar had broken into their house.","強盗が彼らの家に押し入った。"],
+[43,"動詞","can afford to do","～する余裕がある","I can't afford to eat in such a restaurant.","そんなレストランで食事する余裕はない。"],
+[44,"動詞","carry on","～を続ける","Everyone carried on singing and drinking.","誰もが歌ったり飲んだりし続けた。"],
+[45,"動詞","catch the train","列車に間に合う","Do you intend to catch the eight o'clock train?","8時の列車に間に合うつもりですか。"],
+[46,"動詞","change A for B","AをBと交換する","I changed my dress for another.","私は服を別のと交換した。"],
+[47,"動詞","compete with A for B","Bを得るためにAと競争する","We competed with students for the prize.","我々はその賞を得るために生徒と競争した。"],
+[48,"動詞","concentrate A on B","AをBに集中させる","Concentrate your attention on what you are saying!","君は言っていることに集中しなさい。"],
+[49,"動詞","contribute to","～に貢献する","We can contribute to the future of the world.","我々は世界の未来に貢献することが出来る。"],
+[50,"動詞","cope with","～をうまく処理する","He was able to cope with the situation.","彼はその状況にうまく対処できた。"],
+[51,"動詞","decide on","～に決める","She decided on the most beautiful doll.","彼女は一番きれいな人形に決めた。"],
+[52,"動詞","deprive A of B","AからBを奪う","He was deprived of his civil rights.","彼は市民権を奪われた。"],
+[53,"動詞","describe A as B","AをBと評する","She described him as a great statesman.","彼女は彼を偉大な政治家と評した。"],
+[54,"動詞","die of","～で死ぬ","Most patients die of these tumors.","たいていの患者がこれらの腫瘍で死ぬ。"],
+[55,"動詞","distinguish A from B","AとBとを見分ける","I couldn't distinguish him from his twin brother.","私は彼を双子の弟と区別できなかった。"],
+[56,"動詞","do a favor","～の願いを聞く","Will you do me a favor?","頼みを聞いていただけますか。"],
+[57,"動詞","do away with","～を廃止する","She wants to do away with the old rules.","彼女は古い規則を廃止したいと思っている。"],
+[58,"動詞","do harm","～に害を及ぼす","Industrialization has done harm to the culture.","工業化が文化に害を及ぼす。"],
+[59,"動詞","eat out","外食する","We ate out on my birthday.","私たちは私の誕生日に外食した。"],
+[60,"動詞","eat up","～を食べ尽くす","Eat up your lunch.","お昼を残さず食べなさい。"],
+[61,"動詞","end with","～で終わる","The concert ended with a Bach piece.","コンサートはバッハの作品で終わった。"],
+[62,"動詞","fall on","～に当たる","Mother's Day falls on the second Sunday in May.","母の日は5月の第二日曜日にあたる。"],
+[63,"動詞","fill out","～に書き込む","You just have to fill out this card.","君がこのカードに書き込むだけだ。"],
+[64,"動詞","get through","やり遂げる","She got through a great deal of work in a day.","彼女は一日に多くの仕事をやり遂げた。"],
+[65,"動詞","give birth to","～を産む","She gave birth to a daughter yesterday.","彼女は昨日女の子を産んだ。"],
+[66,"動詞","give in","屈服する，降参する","He would not give in to anyone in an argument.","彼は議論では誰にも屈服しようとしなかった。"],
+[67,"動詞","give way","屈する，負ける","Don't give way to temptation.","誘惑に負けるな。"],
+[68,"動詞","go about","～にとりかかる","Go about your business!","自分の仕事をしろ。"],
+[69,"動詞","go well","うまくいく","The party went well.","パーティーはうまくいった。"],
+[70,"動詞","hand over","～を引き渡す","The thief was handed over to the police.","泥棒は警察に引き渡された。"],
+[71,"動詞","hang around","～のあたりをぶらつく","He was hanging around the airfields.","彼は飛行場を徘徊していた。"],
+[72,"動詞","hang on","しがみつく，続行する","Hang on till I get to you.","私が行くまで続行しろ。"],
+[73,"動詞","hang up","電話を切る","I've got to hang up now.","もう電話を切らなければならない。"],
+[74,"動詞","have no choice but to do","～せざるを得ない","You have no choice but to accept the situation.","あなたはその状況を受け入れざるをえない。"],
+[75,"動詞","have on one's mind","～が気にかかっている","What did the old man have on his mind?","老人は何が気にかかっていたのですか。"],
+[76,"動詞","head for","～に向かって進む","He headed for the bag department.","彼はバッグ売り場の方に向かっていった。"],
+[77,"動詞","hear of","～のことを聞く","If he should hear of your marriage, he'd be shocked.","あなたの結婚のことを聞いたら，彼はショックを受けるだろう。"],
+[78,"動詞","hold back","～を抑える","She tried to hold back her anger.","彼女は怒りを抑えようとした。"],
+[79,"動詞","hold on to","～にしがみつく","She held on to the rock.","彼女はその岩にしがみついた。"],
+[80,"動詞","hurry up","急ぐ","Hurry up, or you will miss the train.","急がないと電車に間に合いませんよ。"],
+[81,"動詞","inform A of B","AにBを知らせる","He informed me of the party by letter.","彼はそのパーティのことを手紙で知らせてくれた。"],
+[82,"動詞","interfere with","～の邪魔をする","Don't interfere with me.","私の邪魔をしないで。"],
+[83,"動詞","jump to one's feet","飛び起きる","John jumped to his feet the moment the bell rang.","ジョンはベルが鳴ったとたんに飛び上がった。"],
+[84,"動詞","keep away from","～に近づかない","Please keep away from me.","私に近づかないでちょうだい。"],
+[85,"動詞","keep in contact with","～との接触を保つ","Father kept in contact with us by telephone.","父は電話で我々と連絡を取っていた。"],
+[86,"動詞","keep one's promise","約束を守る","Bill has never kept his promise.","ビルは約束を守ったためしがない。"],
+[87,"動詞","live on","～で生活する","I wonder if he can live on such a small salary.","彼はあんな安月給で生活できるのかしら。"],
+[88,"動詞","long for","～を切望する","She longs for your return.","彼女はあなたが帰ってくるのを切望する。"],
+[89,"動詞","look on A as B","AをBとみなす","We look on Edison as a great inventor.","私たちはエジソンを偉大な発明家だとみなす。"],
+[90,"動詞","look up to","～を尊敬する","The man is looked up to as a reliable lawyer.","その男は信頼できる弁護士として尊敬されている。"],
+[91,"動詞","make a living","生計を立てる","They found it difficult to make a living.","彼らは生計を立てるのは難しいことを知った。"],
+[92,"動詞","make fun of","～をからかう","The writer is making fun of the child.","筆者はその子どもをからかっている。"],
+[93,"動詞","make out","～を理解する","Can you make out what that sign says?","あの標識の意味が理解できるか。"],
+[94,"動詞","make the most of","～を最大限に活用する","Try to make the most of his good quality.","彼の長所を最大限に活用するようにしなさい。"],
+[95,"動詞","mean to do","～するつもりだ","I mean to stay here for a few days.","私はここに数日滞在するつもりだ。"],
+[96,"動詞","object to doing","～に反対する","Nobody can object to my going to the university.","私が大学に行くことに誰も反対できない。"],
+[97,"動詞","owe A to B","AはBのおかげだ","I owe my success to good luck.","私が成功したのは幸運のおかげだ。"],
+[98,"動詞","pass away","亡くなる","He passed away peacefully.","彼は静かに亡くなった。"],
+[99,"動詞","pass for","～で通用する","He looks young, so he passes for twenty.","彼はとても若く見えるので，二十歳で通用する。"],
+[100,"動詞","pick out","～を選び出す","I picked out her address in Boston.","私はボストンの彼女の住所を見つけ出した。"],
+[101,"動詞","present A with B","AにBを贈る","They presented him with a gold watch.","彼らは彼に金時計を贈った。"],
+[102,"動詞","punish A for B","AをBで罰する","The teacher punished the boy for being bad.","先生は素行が悪いのでその少年を罰した。"],
+[103,"動詞","put into practice","～を実行する","Your ideas are hard to put into practice.","君の考えは実行するのが難しい。"],
+[104,"動詞","put together","～をまとめる","I have to put all their ideas together.","私は彼らの意見を全てをまとめなければならない。"],
+[105,"動詞","put off","～を延期する","You can't put off handing in your report.","レポートの提出を延期することはできません。"],
+[106,"動詞","put on weight","太る","You have certainly put on a lot of weight.","確かにずいぶん太ったね。"],
+[107,"動詞","put in order","～を整頓する","He put his affairs in order before leaving.","彼は出発の前に身辺の整理をした。"],
+[108,"動詞","recover from","～から回復する","He'll recover from the disease if he takes this medicine.","この薬を飲めば，病気が治るだろう。"],
+[109,"動詞","replace A with B","AをBと取り替える","He replaced three seats with extra fuel tanks.","彼は座席の3つ分を予備のタンクと取り替えた。"],
+[110,"動詞","say hello to","～によろしくと伝える","Please say hello to your wife.","奥さんによろしくお伝えください。"],
+[111,"動詞","set aside","とっておく，脇におく","The financial problems were set aside.","経済的な問題は脇におかれた。"],
+[112,"動詞","settle down","定住する，落ち着く","He settled himself down into his chair.","彼はどっしりと椅子に落ち着いた。"],
+[113,"動詞","shake one's head","首を横に振る","Jack shook his head and said No.","ジャックは首を横に振り，「いいえ」と言った。"],
+[114,"動詞","speak ill of","～を悪く言う","You should not speak ill of others.","あなたは他人の悪口を言うべきではない。"],
+[115,"動詞","take it easy","のんびりする","Please take it easy here.","ここではのんびりしてください。"],
+[116,"動詞","take one's time","ゆっくりやる","I'm in no hurry, so just take your time.","私は急ぎませんから，どうぞゆっくりしてください。"],
+[117,"動詞","take turns doing","交替で～する","They took turns driving the car.","彼らは交替で運転した。"],
+[118,"動詞","talk A into doing","Aを説得して～させる","I can talk him into lending me the car.","私に車を貸すように彼を説得できます。"],
+[119,"動詞","think much of","～を重視する","I don't think much of his property.","私は彼の財産を重視していません。"],
+[120,"動詞","wear out","疲れ果てさせる，すり減らす","We wore out the dictionaries.","我々はそれらの辞書を使い古した。"],
+[121,"形容詞句","at home in","～に精通して","He is at home in the subject.","彼はそのテーマに精通している。"],
+[122,"形容詞句","of value","価値がある","The books are of great value.","その本は非常に価値がある。"],
+[123,"形容詞句","on the verge of","～の間際に","The yacht is on the verge of turning over.","そのヨットはまさに転覆しそうだ。"],
+[124,"形容詞句","out of breath","息を切らして","The old lady was out of breath from climbing stairs.","その老婦人は階段を登って息を切らしていた。"],
+[125,"形容詞句","out of control","手に負えない","Things got out of control.","事態は制御不能になった。"],
+[126,"形容詞句","out of date","時代遅れで","Technology can make older skills out of date.","技術の変化は技術を時代遅れにすることがある。"],
+[127,"形容詞句","out of the question","問題にならない，不可能で","His plan is out of the question.","彼の計画は問題外だ。"],
+[128,"形容詞句","some or other","何らかの～","She was talking to some man or other.","彼女は何らかの男の人と話していた。"],
+[129,"形容詞句","under way","進行中で","The building of a new church is under way.","新しい教会の建築が進行中だ。"],
+[130,"副詞句","apart from","～は別として","Apart from baseball, I don't watch TV.","野球は別として，私はテレビを見ない。"],
+[131,"副詞句","as ever","あいかわらず～で","Common sense is as useful now as ever.","常識は以前と変わらず有効である。"],
+[132,"副詞句","as good as","～も同然だ","He as good as promised to employ her.","彼は彼女を雇うと約束したも同然だ。"],
+[133,"副詞句","at any rate","とにかく","I may fail, but at any rate I'll try.","失敗するかもしれないが，とにかくやってみよう。"],
+[134,"副詞句","at most","多くても，せいぜい","She is at most 25 years old.","彼女はせいぜい25才だ。"],
+[135,"副詞句","at the cost of","～を犠牲にして","He wanted to succeed at the cost of his health.","彼は健康を犠牲にしてでも成功したかった。"],
+[136,"副詞句","at the mercy of","～のなすがままに","He was at the mercy of his boss.","彼は上司のなすがままだった。"],
+[137,"副詞句","at the risk of","～の危険を冒して","He saved the baby at the risk of his life.","彼は命の危険を冒してその赤ちゃんを救った。"],
+[138,"副詞句","at the sight of","～を見て","The thief ran away at the sight of a policeman.","その泥棒は警察を見て走り去った。"],
+[139,"副詞句","at the thought of","～を考えて","At the thought of his failure, he was unable to sleep.","自分の失敗のことを考えると，彼は眠れなかった。"],
+[140,"副詞句","beyond description","言葉では表現できないほど","Her life was miserable beyond description.","彼女の生活は言葉では表現できないほど悲惨だった。"],
+[141,"副詞句","for nothing","ただで，無駄に","I'm not a farmer for nothing.","私はただで農夫をやっているわけではない。"],
+[142,"副詞句","for one's part","～としては","For my part I agree to his plan.","私としては彼の案に賛成です。"],
+[143,"副詞句","for the moment","さしあたり","The monkey was left with the police for the moment.","猿は当分の間，警官に預けられた。"],
+[144,"副詞句","from place to place","あちらこちらへ","My family moved from place to place in my childhood.","子供の頃，私の家族はあちらこちらへ引っ越した。"],
+[145,"副詞句","in accordance with","～に従って","I will do it in accordance with your instructions.","私はあなたの指示に従ってそれをします。"],
+[146,"副詞句","in advance","前もって","You will have to pay in advance.","前もってお金を払わなければならないだろう。"],
+[147,"副詞句","in anger","怒って","She was in great anger.","彼女はたいへん怒っていた。"],
+[148,"副詞句","in any case","とにかく，いずれにせよ","In any case we have to take a taxi.","いずれにせよ，タクシーに乗らなければならない。"],
+[149,"副詞句","in comparison with","～と比べて","In comparison with Mt. Everest, Mt. Fuji is not so high.","エベレスト山に比べると，富士山はそれほど高くない。"],
+[150,"副詞句","in despair","絶望して","I said, almost in despair.","私はほとんど絶望して言った。"],
+[151,"副詞句","in detail","詳細に","There was no time to explain in detail.","詳しく説明している時間はなかった。"],
+[152,"副詞句","in favor of","～に賛成して","People are in favor of the project.","人々はその計画に賛成である。"],
+[153,"副詞句","in memory of","～を記念して","They erected a monument in memory of Washington.","ワシントンを偲んで記念碑を建てた。"],
+[154,"副詞句","in need of","～を必要として","The house was badly in need of repair.","その家は，まだとても修理を必要としていた。"],
+[155,"副詞句","in one's presence","～の目の前で","I fell down in their presence.","私は彼らの目の前で転んだ。"],
+[156,"副詞句","in order","整って，順番に","I just finished putting the room in order.","部屋の整頓は今終わったところです。"],
+[157,"副詞句","in person","自ら，自分で","You had better thank her in person.","直接彼女にお礼を言ったほうがよい。"],
+[158,"副詞句","in the direction of","～の方向に","He walked in the direction of the woods.","彼は森の方向に歩いていった。"],
+[159,"副詞句","in the long run","長い目で見れば，結局は","This will be cheaper in the long run.","長い目で見ればこっちの方が安上がりだ。"],
+[160,"副詞句","in the way","邪魔になって","The big desk is in the way.","大きな机が邪魔になっている。"],
+[161,"副詞句","in use","使われている","Laser beams are now in use in space communications.","レーザー光線は現在，宇宙通信で使われている。"],
+[162,"副詞句","in vain","無駄に","He spent a day repairing the car in vain.","彼は自動車を修理するのに一日費やしたが，無駄になった。"],
+[163,"副詞句","now and then","時おり","He glanced at his watch now and then.","彼は時おり腕時計をちらりと見た。"],
+[164,"副詞句","on average","平均して","On average, I study for three hours every day.","平均して私は毎日3時間勉強する。"],
+[165,"副詞句","so to speak","いわば","He is, so to speak, our king.","彼はいわば私たちの王様だ。"],
+[166,"副詞句","sooner or later","遅かれ早かれ","Sooner or later you have to take the exam.","遅かれ早かれあなたはそのテストを受けねばならない。"],
+[167,"副詞句","to make matters worse","さらに悪いことには","To make matters worse, it started to rain.","さらに悪いことに，雨が降ってきた。"],
+[168,"副詞句","under one's nose","～の目の前で","She made the interview under the journalist's nose.","彼女はジャーナリストの目の前で会見をした。"],
+[169,"副詞句","up to now","今まで","Thinking has been considered a human activity up to now.","思考は今まで純粋に人間的な活動だと考えられてきた。"],
+[170,"副詞句","with pleasure","喜んで","He did the work with pleasure.","彼は喜んでその仕事をした。"],
+[171,"論理表現","and that","しかも","He makes mistakes, and that very often.","彼は間違いをする。しかもしょっちゅうだ。"],
+[172,"論理表現","at first sight","一見して","I recognized you at first sight.","私は一目で君だと分かった。"],
+[173,"論理表現","by nature","生来，本来","She is by nature a generous person.","彼女は本来寛大な人だ。"],
+[174,"論理表現","contrary to","～に反して","His ideas about music are contrary to my own.","音楽に関する兄の考え方は私とは反する。"],
+[175,"論理表現","for the purpose of","～のために，～する目的で","He bought the land for the purpose of building a store.","彼は店を建てるためにその土地を買った。"],
+[176,"論理表現","for the sake of","～のために（利益）","He had to fly off the course for the sake of safety.","彼は安全のために通常のコースを避けて飛ばなければならなかった。"],
+[177,"論理表現","from point of view","～の見地から考えて","From a medical point of view, she should quit smoking.","医学的見地からして，彼女は喫煙をやめるべきだ。"],
+[178,"論理表現","generally speaking","概して言うと","Generally speaking, roads are narrow in Japan.","概して言うと，日本では道路は狭い。"],
+[179,"論理表現","have nothing to do with","～とは全く関係がない","I have nothing to do with that thief.","私はあの泥棒と全く関係がない。"],
+[180,"論理表現","in a sense","ある意味では","In a sense what he says is true.","ある意味では彼の言うことは本当だ。"],
+[181,"論理表現","in place of","～の代わりに","I will go in place of her.","彼女の代わりに僕が行くよ。"],
+[182,"論理表現","in relation to","～に関連して，～について","We discussed our responsibility in relation to education.","私たちは教育に関連して責任について話しあった。"],
+[183,"論理表現","in respect of","～の点では，～に関しては","I have no objection in respect of what you say.","あなたの言っていることに関しては異論はありません。"],
+[184,"論理表現","in terms of","～の点から，～によって","The paper discusses the problem in terms of politics.","論文はその問題を政治の観点から論じている。"],
+[185,"論理表現","in the first place","まず第一に","The book is worth reading in the first place.","まず第一にその本は読む価値がある。"],
+[186,"論理表現","It is likely that","～しそうである，多分～だろう","It is likely that he was late on purpose.","彼がわざと遅れたということもありそうだ。"],
+[187,"論理表現","on the contrary","それとは反対に，それどころか","On the contrary, I haven't begun yet.","それどころか，まだ始めてもいないよ。"],
+[188,"論理表現","on the whole","概して，全体から見れば","The weather this month has been good on the whole.","今月の天気は概してよかった。"],
+[189,"論理表現","strictly speaking","厳密に言えば","Strictly speaking, that is illegal.","厳密に言えば，それは違法だ。"],
+[190,"論理表現","the former the latter","前者，後者","We support the former plan instead of the latter.","我々は後者でなく前者の計画を支持する。"],
+[191,"論理表現","to be sure","確かに","He is a very nice person, to be sure.","彼は確かにとても素晴らしい人だ。"],
+[192,"論理表現","to say nothing of","～は言うまでもなく","He speaks French, to say nothing of English.","彼はフランス語を話す。英語は言うまでもなく話せる。"],
+[193,"論理表現","what is more","さらに","He is very rich, and what is more, very handsome.","彼はとてもお金持ちで，その上，とてもハンサムだ。"],
+[194,"論理表現","when it comes to","～のことになると","When it comes to tennis, no one can beat Fred.","テニスのことになると，誰もフレッドを負かすことはできない。"],
+[195,"論理表現","anything but","決して～でない","Our teacher is anything but a good teacher.","私たちの先生は決していい教師とはいえない。"],
+[196,"論理表現","if it were not for","もし～がなければ","If it were not for the seasons, life would be monotonous!","季節の移り変わりがなければ，我々の生活はさぞかし単調だろう。"],
+[197,"論理表現","much less","なおさら～でない","He can't support himself, much less a family.","彼は自活できない。まして家族は養えない。"],
+[198,"論理表現","not so much A as B","AというよりむしろB","He is not so much a genius as a hard worker.","彼は天才というよりむしろ努力家だ。"],
+[199,"論理表現","scarcely when","～するとすぐに","I had scarcely said a word when he entered the room.","私が言葉を発するとすぐに彼が部屋に入ってきた。"],
+[200,"論理表現","What for?","なぜ，何の目的で～","What on earth did you go to such a place for?","なぜ君はそんなところに行ったのか。"]
+];
+
+const NO=0,CAT=1,EN=2,JA=3,EX=4,JX=5;
+const allJA=D.map(d=>d[JA]);
+const byNo=Object.fromEntries(D.map(d=>[d[NO],d]));
+
+const STAGES=[
+  {id:'s1',name:'ステージ１',sub:'動詞熟語 No.1〜40',   nos:rng(1,40)},
+  {id:'s2',name:'ステージ２',sub:'動詞熟語 No.41〜80',  nos:rng(41,80)},
+  {id:'s3',name:'ステージ３',sub:'動詞熟語 No.81〜120', nos:rng(81,120)},
+  {id:'s4',name:'ステージ４',sub:'修飾句 No.121〜170',  nos:rng(121,170)},
+  {id:'s5',name:'ステージ５',sub:'論理表現 No.171〜200',nos:rng(171,200)},
+];
+function rng(a,b){const r=[];for(let i=a;i<=b;i++)r.push(i);return r}
+
+// ── storage ──
+const SK='bus_v4';
+let ST={w:{},conf:{},fin:{}};
+let studentName='', studentClass='';
+
+function loadST(){
+  try{
+    const s=JSON.parse(localStorage.getItem(SK)||'{}');
+    ST.w=s.w||{}; ST.conf=s.conf||{}; ST.fin=s.fin||{};
+    studentName=s.name||''; studentClass=s.cls||'';
+  }catch(e){}
+}
+function saveST(){
+  try{localStorage.setItem(SK,JSON.stringify({...ST,name:studentName,cls:studentClass}));}catch(e){}
+}
+loadST();
+
+function gw(n){if(!ST.w[n])ST.w[n]={k:0,s:'u'};return ST.w[n]}
+function uw(n,ok){const w=gw(n);if(ok){w.k=(w.k||0)+1;w.s=w.k>=2?'m':'c';}else{w.k=0;w.s='u';}saveST();}
+
+function stStat(sid){
+  const nos=STAGES.find(s=>s.id===sid).nos;
+  const m=nos.filter(n=>gw(n).s==='m').length;
+  const c=nos.filter(n=>gw(n).s==='c').length;
+  return{m,c,u:nos.length-m-c,tot:nos.length,pct:Math.round(m/nos.length*100)};
+}
+function allM(sid){const s=stStat(sid);return s.m===s.tot}
+function unlocked(i){return i===0||!!ST.conf[STAGES[i-1].id]}
+function allConf(){return STAGES.every(s=>ST.conf[s.id])}
+
+// ── sync to Google Sheets ──
+async function syncToServer(){
+  if(!studentName){return}
+  const el=document.getElementById('sync-status');
+  el.textContent='送信中…';
+  const payload={
+    name: studentName,
+    cls:  studentClass,
+    ts:   new Date().toISOString(),
+    s1pct: stStat('s1').pct, s1conf: ST.conf['s1']?1:0,
+    s2pct: stStat('s2').pct, s2conf: ST.conf['s2']?1:0,
+    s3pct: stStat('s3').pct, s3conf: ST.conf['s3']?1:0,
+    s4pct: stStat('s4').pct, s4conf: ST.conf['s4']?1:0,
+    s5pct: stStat('s5').pct, s5conf: ST.conf['s5']?1:0,
+    totalMastered: D.filter(d=>gw(d[NO]).s==='m').length,
+    fin1: ST.fin.p1?1:0,
+    finPerfect: ST.fin.perfect?1:0,
+  };
+  try{
+    await fetch(GAS_URL, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    el.textContent='✓ 送信完了 '+new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    el.textContent='送信失敗（オフライン？）';
+  }
+}
+
+// auto-sync after confirm test & final test pass
+function autoSync(){syncToServer()}
+
+// ── app state ──
+let timer=5, count=0, curSid=null;
+let QQ=[],qi=0,sc=0,toC=0,log=[];
+let isConf=false,isFin=false,isPerfect=false,confSid=null,backFn=null;
+let th=null,tLeft=0;
+
+function shuf(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]]}return b}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&#34;')}
+function pg(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on')}
+function setTimer(v){timer=v;document.querySelectorAll('#seg-t .sb').forEach(b=>b.classList.toggle('on',+b.dataset.v===v))}
+function setCount(v){count=v;document.querySelectorAll('#seg-c .sb').forEach(b=>b.classList.toggle('on',+b.dataset.v===v))}
+
+// ── login ──
+function doLogin(){
+  const cls=document.getElementById('inp-class').value.trim();
+  const nm=document.getElementById('inp-name').value.trim();
+  const err=document.getElementById('login-err');
+  if(!cls||!nm){err.style.display='block';return}
+  err.style.display='none';
+  studentClass=cls; studentName=nm;
+  saveST();
+  goHome();
+}
+document.getElementById('inp-name').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+// ── home ──
+function goHome(){
+  clearTimeout(th);
+  if(!studentName){pg('pg-login');return}
+  pg('pg-home');
+  document.getElementById('student-name').textContent=studentClass+' '+studentName;
+  const fin=ST.fin;
+  const gbw=document.getElementById('gbadge-wrap');
+  if(fin.perfect) gbw.innerHTML=`<span class="gbadge gb2">🏆 完全修得達成！</span>`;
+  else if(fin.p1){
+    const d2=new Date(new Date(fin.p1).getTime()+2*864e5),now=new Date();
+    if(now>=d2) gbw.innerHTML=`<span class="gbadge gb1">⭐ 修了済 — 最終テスト2回目受験可能</span>`;
+    else{const df=Math.ceil((d2-now)/864e5);gbw.innerHTML=`<span class="gbadge gb1">⭐ 修了済 — 2回目まであと${df}日</span>`;}
+  }else gbw.innerHTML='';
+
+  document.getElementById('stage-list').innerHTML=STAGES.map((st,i)=>{
+    const s=stStat(st.id),lk=!unlocked(i),cf=!!ST.conf[st.id];
+    const icC=cf?'ic-done':lk?'ic-lock':'ic-act';
+    const icH=cf?'✓':lk?'🔒':`${i+1}`;
+    const tag=cf?`<span class="st-tag tag-m">修得</span>`:lk?'':s.m>0?`<span class="st-tag tag-p">学習中</span>`:`<span class="st-tag tag-u">未着手</span>`;
+    return`<div class="strow${cf?' conf':''}${lk?' locked':''}" ${lk?'':('onclick="openStage(\''+st.id+'\')"')}>
+      <div class="st-ic ${icC}">${icH}</div>
+      <div class="st-bd">
+        <div class="st-name">${st.name}</div>
+        <div class="st-sub">${st.sub}</div>
+        <div class="st-bar"><div class="st-fill" style="width:${s.pct}%"></div></div>
+      </div>${tag}</div>`;
+  }).join('');
+
+  const fa=document.getElementById('final-area');
+  if(!allConf()){fa.innerHTML='';return}
+  let html='';
+  if(!fin.p1){
+    html=`<div class="fbox"><h3>🚩 修了判定テスト（1回目）</h3><p>全ステージ修得おめでとうございます！全200語からランダム50問。1問ミス以内で合格。</p><button class="fbtn" onclick="launchFinal(false)">受験する</button></div>`;
+  }else if(!fin.perfect){
+    const d2=new Date(new Date(fin.p1).getTime()+2*864e5),now=new Date();
+    if(now>=d2){
+      html=`<div class="fbox"><h3>🚩 修了判定テスト（2回目）</h3><p>全200語からランダム50問。1問ミス以内で完全修得認定。</p><button class="fbtn" onclick="launchFinal(true)">受験する</button></div>`;
+    }else{
+      const df=Math.ceil((d2-now)/864e5);
+      html=`<div class="fbox" style="opacity:.7"><h3>⏳ 修了判定テスト（2回目）</h3><p>1回目合格！あと${df}日で受験できます。</p><button class="fbtn" disabled>あと${df}日</button></div>`;
+    }
+  }else{
+    html=`<div class="fbox" style="border-color:#6ee7a0;background:#edfaf3"><h3 style="color:#1a7a45">🏆 完全修得達成！</h3><p>バスで覚える英熟語を完全修得しました！🎉</p></div>`;
+  }
+  fa.innerHTML=html;
+}
+
+// ── stage ──
+function openStage(sid){
+  curSid=sid;
+  const st=STAGES.find(s=>s.id===sid);
+  pg('pg-stage');
+  document.getElementById('sv-title').textContent=st.name;
+  document.getElementById('sv-desc').textContent=st.sub;
+  const s=stStat(sid);
+  document.getElementById('stat-row').innerHTML=
+    `<span class="chip ch-m">修得 ${s.m}</span><span class="chip ch-c">点検中 ${s.c}</span><span class="chip ch-u">未修得 ${s.u}</span><span style="font-size:12px;color:#888;margin-left:2px">修得率 ${s.pct}%</span>`;
+  document.getElementById('mode-grid').innerHTML=
+    `<button class="mbtn" onclick="launchPractice('${sid}','all')"><div class="mb-t">全語演習</div><div class="mb-s">${st.nos.length}語</div></button>
+     <button class="mbtn" ${s.u===0?'disabled':''} onclick="launchPractice('${sid}','u')"><div class="mb-t">未修得のみ</div><div class="mb-s">${s.u}語</div></button>
+     <button class="mbtn" ${s.m===0?'disabled':''} onclick="launchPractice('${sid}','m')"><div class="mb-t">修得済みのみ</div><div class="mb-s">${s.m}語</div></button>`;
+  const ca=document.getElementById('confirm-area');
+  if(ST.conf[sid]){
+    ca.innerHTML=`<div class="cbox" style="border-color:#6ee7a0;background:#edfaf3"><h4 style="color:#1a7a45">✓ ステージ修得済み</h4><p style="color:#1a7a45">確認テスト合格済みです。引き続き復習できます。</p></div>`;
+  }else if(allM(sid)){
+    ca.innerHTML=`<div class="cbox"><h4>📋 確認テスト受験可能</h4><p>全${st.nos.length}語を出題。1問ミス以内で合格・ステージ修得。</p><button class="cbtn" onclick="launchConfirm('${sid}')">確認テストを受験する</button></div>`;
+  }else{
+    ca.innerHTML=`<p style="font-size:12px;color:#aaa;margin-top:.25rem">修得率100%になると確認テストが受験できます</p>`;
+  }
+}
+
+// ── launch ──
+function launchPractice(sid,mode){
+  const st=STAGES.find(s=>s.id===sid);
+  let pool=st.nos.map(n=>byNo[n]);
+  if(mode==='u')pool=pool.filter(d=>gw(d[NO]).s==='u');
+  if(mode==='m')pool=pool.filter(d=>gw(d[NO]).s==='m');
+  if(!pool.length)return;
+  pool=['u','c','m'].flatMap(x=>shuf(pool.filter(d=>gw(d[NO]).s===x)));
+  if(count>0)pool=pool.slice(0,count);
+  isConf=false;isFin=false;isPerfect=false;confSid=null;backFn=()=>openStage(sid);
+  startQ(pool);
+}
+function launchConfirm(sid){
+  const pool=shuf(STAGES.find(s=>s.id===sid).nos.map(n=>byNo[n]));
+  isConf=true;isFin=false;isPerfect=false;confSid=sid;backFn=()=>openStage(sid);
+  startQ(pool);
+}
+function launchFinal(perf){
+  const pool=shuf([...D]).slice(0,50);
+  isConf=false;isFin=true;isPerfect=perf;confSid=null;backFn=()=>goHome();
+  startQ(pool);
+}
+
+// ── quiz ──
+function startQ(pool){
+  QQ=pool;qi=0;sc=0;toC=0;log=[];
+  document.getElementById('qback').onclick=()=>{clearTimeout(th);backFn()};
+  pg('pg-quiz');renderQ();
+}
+function renderQ(){
+  clearTimeout(th);
+  const d=QQ[qi],tot=QQ.length;
+  document.getElementById('qvinfo').textContent=`${qi+1} / ${tot}　正解 ${sc}`;
+  document.getElementById('qbarf').style.width=`${Math.round(qi/tot*100)}%`;
+  document.getElementById('qno').textContent=`No.${d[NO]}`;
+  document.getElementById('qidiom').textContent=d[EN];
+  document.getElementById('qcat').textContent=d[CAT];
+  document.getElementById('exbox').style.display='none';
+  document.getElementById('nxtbtn').disabled=true;
+  document.getElementById('nxtbtn').textContent=qi+1<tot?'次の問題へ →':'結果を見る';
+  const correct=d[JA];
+  const opts=shuf([correct,...shuf(allJA.filter(j=>j!==correct)).slice(0,3)]);
+  const L=['①','②','③','④'];
+  document.getElementById('choices').innerHTML=opts.map((o,i)=>{
+    const ev=esc(o),ec=esc(correct);
+    return`<button class="cb" data-v="${ev}" onclick="ans(this,'${ev}','${ec}')"><span class="clbl">${L[i]}</span>${esc(o)}</button>`;
+  }).join('');
+  if(timer>0){
+    const svg=document.getElementById('tsvg'),arc=document.getElementById('tarc'),num=document.getElementById('tnum');
+    svg.style.display='';num.style.display='';
+    tLeft=timer;num.textContent=tLeft;arc.style.strokeDashoffset='0';arc.style.stroke='#6366f1';
+    const tick=()=>{tLeft--;num.textContent=tLeft;arc.style.strokeDashoffset=`${81.7*(1-tLeft/timer)}`;if(tLeft<=2)arc.style.stroke='#ef4444';if(tLeft<=0)onTO();else th=setTimeout(tick,1000);};
+    th=setTimeout(tick,1000);
+  }else{document.getElementById('tsvg').style.display='none';document.getElementById('tnum').style.display='none';}
+}
+function onTO(){
+  clearTimeout(th);toC++;
+  const d=QQ[qi];
+  document.querySelectorAll('.cb').forEach(b=>{b.disabled=true;if(b.dataset.v===esc(d[JA]))b.classList.add('ok');else b.classList.add('to');});
+  if(!isFin&&!isConf)uw(d[NO],false);
+  log.push({e:d[EN],j:d[JA],ch:'⏱',ok:false,to:true,no:d[NO]});
+  document.getElementById('exen').textContent=d[EX];
+  document.getElementById('exjp').textContent=d[JX];
+  document.getElementById('exbox').style.display='block';
+  document.getElementById('nxtbtn').disabled=false;
+}
+function ans(btn,chosen,correct){
+  clearTimeout(th);
+  document.querySelectorAll('.cb').forEach(b=>b.disabled=true);
+  const d=QQ[qi],ok=chosen===correct;
+  btn.classList.add(ok?'ok':'ng');
+  if(!ok)document.querySelectorAll('.cb').forEach(b=>{if(b.dataset.v===correct)b.classList.add('ok')});
+  if(ok)sc++;
+  if(!isFin&&!isConf)uw(d[NO],ok);
+  log.push({e:d[EN],j:d[JA],ch:chosen,ok,to:false,no:d[NO]});
+  document.getElementById('exen').textContent=d[EX];
+  document.getElementById('exjp').textContent=d[JX];
+  document.getElementById('exbox').style.display='block';
+  document.getElementById('nxtbtn').disabled=false;
+}
+function nextQ(){qi++;if(qi>=QQ.length)showResult();else renderQ()}
+
+// ── result ──
+function showResult(){
+  clearTimeout(th);pg('pg-result');
+  const tot=QQ.length,miss=tot-sc,pct=Math.round(sc/tot*100);
+  document.getElementById('rsc').textContent=sc;
+  document.getElementById('rden').textContent=` / ${tot}`;
+  document.getElementById('rsok').textContent=`✓ 正解 ${sc}`;
+  document.getElementById('rsng').textContent=`✗ 不正解 ${miss-toC}`;
+  document.getElementById('rsto').textContent=`⏱ 時間切れ ${toC}`;
+  let msg='';
+  if(isConf){
+    if(miss<=1){ST.conf[confSid]=true;saveST();autoSync();msg=`🏆 合格！ステージを修得しました。（${miss}問ミス）`;}
+    else msg=`不合格。${miss}問ミス。もう少し復習してから再挑戦しましょう。`;
+  }else if(isFin){
+    if(miss<=1){
+      if(isPerfect){ST.fin.perfect=true;ST.fin.pd=new Date().toLocaleDateString('ja-JP');saveST();autoSync();msg='🎊 完全修得達成！おめでとうございます！';}
+      else if(!ST.fin.p1){ST.fin.p1=new Date().toISOString();saveST();autoSync();msg=`🏅 1回目合格！（${miss}問ミス）2日後以降に2回目を受験できます。`;}
+      else msg=`合格！（${miss}問ミス）`;
+    }else msg=`不合格。${miss}問ミス。もう少し練習してから再挑戦しましょう。`;
+  }else{
+    msg=pct>=90?'素晴らしい！':pct>=70?'よくできました！':pct>=50?'もう少し！':'引き続き復習しましょう';
+  }
+  document.getElementById('rmsg').textContent=msg;
+  document.getElementById('rbtn').textContent=`← ${isFin?'ホームへ':'ステージへ'}`;
+  document.getElementById('rbtn').onclick=()=>{clearTimeout(th);backFn()};
+  document.getElementById('racts').innerHTML=
+    (!isFin?`<button class="ra" onclick="retry()">↺ もう一度</button>`:'')
+    +`<button class="ra" onclick="backFn()">← ${isFin?'ホームへ':'ステージへ'}</button>`;
+  document.getElementById('revlist').innerHTML=log.map(r=>{
+    const ws=(!isFin&&!isConf)?gw(r.no).s:null;
+    const stag=ws?`<span class="stag ${ws==='m'?'stag-m':ws==='c'?'stag-c':'stag-u'}">${ws==='m'?'修得':ws==='c'?'点検中':'未修得'}</span>`:'';
+    return`<div class="ritem"><span style="font-size:14px;flex-shrink:0">${r.ok?'✅':r.to?'⏱':'❌'}</span>
+      <div><div class="riid">${esc(r.e)}${stag}</div>
+      ${r.ok?`<span class="ri-ok">${esc(r.j)}</span>`:`<span class="ri-ng">${esc(r.to?'時間切れ':r.ch)}</span> → <span class="ri-ok">${esc(r.j)}</span>`}
+      </div></div>`;
+  }).join('');
+}
+function retry(){qi=0;sc=0;toC=0;log=[];pg('pg-quiz');renderQ();}
+
+// init
+if(studentName) goHome(); else pg('pg-login');
+</script>
+</body>
+</html>
